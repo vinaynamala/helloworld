@@ -20,3 +20,4 @@ sample
 16-06-2022--> today is THURSDAY
 21-06-2022
 14-07-2022 today is thursday
+23/07/2022 today is saturday
