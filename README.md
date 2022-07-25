@@ -21,3 +21,4 @@ sample
 21-06-2022
 14-07-2022 today is thursday
 23/07/2022 today is saturday
+25/07/2022 today is monday
