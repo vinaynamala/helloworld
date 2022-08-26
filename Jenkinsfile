@@ -1,47 +1,25 @@
-pipeline {
-    agent any 
-    tools { 
-        maven 'Maven' 
-      
-    }
-stages { 
-     
- stage('Preparation') { 
-     steps {
-// for display purposes
+pipeline 
+{
+agent any (on which) 
 
-      // Get some code from a GitHub repository
+options { buildDiscarder(logRotator(numToKeepStr: '1')) }
 
-      git 'https://github.com/vinaynamala/hello-world-servlet.git'
+triggers { cron('H */4 * * 1-5')  }
 
-      // Get the Maven tool.
-     
- // ** NOTE: This 'M3' Maven tool must be configured
- 
-     // **       in the global configuration.   
-     }
-   }
+tools { maven 'Maven'   } 
 
-   stage('Build') {
-       steps {
-       // Run the maven build
 
-      //if (isUnix()) {
-         sh 'mvn -Dmaven.test.failure.ignore=true install'
-      //} 
-      //else {
-      //   bat(/"${mvnHome}\bin\mvn" -Dmaven.test.failure.ignore clean package/)
-       }
-//}
-   }
- 
-  stage('Results') {
-      steps {
-      junit '**/target/surefire-reports/TEST-*.xml'
-      archiveArtifacts 'target/*.war'
-      }
- }
- stage('Sonarqube') {
+stage (code checkout) {
+	steps 	{	
+		git 'https://github.com/vinaynamala/helloworldservlet.git' }
+	}
+
+stage  (build){
+	steps  {
+		sh 'clean package' 
+		}
+	}
+stage('Sonarqube') {
     environment {
         scannerHome = tool 'sonarqube'
     }
@@ -54,23 +32,22 @@ stages {
   //      }
     }
 }
-     stage('Artifact upload') {
-      steps {
-     nexusPublisher nexusInstanceId: '1234', nexusRepositoryId: 'releases', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: 'target/helloworld.war']], mavenCoordinate: [artifactId: 'hello-world-servlet-example', groupId: 'com.geekcap.vmturbo', packaging: 'war', version: '$BUILD_NUMBER']]]
-      }
- }
-     stage('Deploy War') {
+
+stage ( artifact uploader ){
+	steps {
+		nexusPublisher nexusInstanceId: '1234', nexusRepositoryId: 'hello-world-servlet', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: 'target/helloworld.war']], mavenCoordinate: [artifactId: 'hello-world-servlet-example', groupId: 'com.geekcap.vmturbo', packaging: 'war', version: '$BUILD_NUMBER']]]
+		}	
+	} 
+stage('Deploy War') {
       steps {
         sh label: '', script: 'ansible-playbook deploy.yml'
       }
  }
 }
+
 post {
-        success {
-            mail to:"namalavinay038@gmail.com", subject:"SUCCESS: ${currentBuild.fullDisplayName}", body: "Build success"
-        }
-        failure {
-            mail to:"namalavinay038@gmail.com", subject:"FAILURE: ${currentBuild.fullDisplayName}", body: "Build failed"
-        }
-    }       
+	sucess : junit '**/target/surefire-reports/*.xml' 
+ 	         cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+	failuer : mail bcc: '', body: '', cc: '', from: '', replyTo: '', subject: 'HelloWorldServlet', to: 'namalavinay038@gmail.com'
+	}
 }
