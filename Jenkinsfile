@@ -12,7 +12,7 @@ stages {
 
       // Get some code from a GitHub repository
 
-      git 'https://github.com/vinaynamala/helloworld.git'
+      git 'https://github.com/vinaynamala/hello-world-servlet.git'
 
       // Get the Maven tool.
      
@@ -27,7 +27,7 @@ stages {
        // Run the maven build
 
       //if (isUnix()) {
-         sh 'clean package'
+         sh 'mvn -Dmaven.test.failure.ignore=true install'
       //} 
       //else {
       //   bat(/"${mvnHome}\bin\mvn" -Dmaven.test.failure.ignore clean package/)
